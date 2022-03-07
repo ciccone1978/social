@@ -2,17 +2,6 @@ const router = require("express").Router();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
-//register
-/*router.get("/register", async(req,res)=>{
-    const user = await new User({
-        username:"norris",
-        email:"norris@gmail.com",
-        password:"12345678"
-    });
-    await user.save();
-    res.send("OK");
-});*/
-
 //Register New User
 router.post("/register", async(req,res)=>{
     try{
@@ -31,9 +20,24 @@ router.post("/register", async(req,res)=>{
         const u = await user.save();
         res.status(200).json(u);
     } catch(e){
-        console.log(e);
+        res.status(500).json(e);
     }
 
+});
+
+//Login
+router.post("/login", async(req,res)=>{
+    try{
+        const user = await User.findOne({email:req.body.email});
+        !user && res.status(404).json("user not found");
+
+        const validPassword = await bcrypt.compare(req.body.password, user.password);
+        !validPassword && res.status(400).json("wrong password");
+
+        res.status(200).json(user);
+    }catch(e){
+        res.status(500).json(e);
+    }
 });
 
 module.exports = router;
